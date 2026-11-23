@@ -13,8 +13,7 @@ Web application that tells you if a URL is **safe or phishing**, using several l
 | 4 | Zero-Day rules | 15 heuristic checks for new, unknown threats | 20% |
 | 5 | HTML analysis (optional) | Fetches the page: password fields, external forms, hidden iframes, urgent language | +29% blend |
 
-## Screenshots
-![demo](screenshots/demo.png)
+
 
 ## Results
 Each model was evaluated separately on its own test set:
