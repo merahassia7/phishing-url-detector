@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.vscode/
+datasets/collected_data.csv
+datasets/prepared_urls.csv
+*.safetensors
+models/securebert_phishing/
