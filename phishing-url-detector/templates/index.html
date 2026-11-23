@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phishing Detector v2 | UMBB</title>
+  <link rel="icon" type="image/png" href="/icon/logo.png?v=2">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+
+    body{
+      font-family:'Trebuchet MS','Segoe UI',sans-serif;
+      background:#0a0c14;
+      color:#e0e0e0;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:30px 20px;
+      line-height:1.45;
+    }
+
+    h1{
+      font-size:1.9rem;
+      color:#fff;
+      margin-bottom:4px;
+      text-align:center;
+      font-weight:780;
+      letter-spacing:.25px;
+    }
+    h1 span{color:#4fc3f7}
+    .sub{
+      color:#667084;
+      font-size:.9rem;
+      margin-bottom:30px;
+      text-align:center;
+      letter-spacing:.12px;
+    }
+
+    .engines{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-bottom:28px;
+    }
+
+    .badge{
+      padding:6px 14px;
+      border-radius:20px;
+      font-size:.75rem;
+      font-weight:600;
+      letter-spacing:.15px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid transparent;
+    }
+
+    .badge .dot{width:8px;height:8px;border-radius:50%}
+    .badge.html{background:#0d2e20;border-color:#2e7d32;color:#66bb6a}
+    .badge.html .dot{background:#66bb6a}
+    .badge.zero{background:#2e2200;border-color:#f57c00;color:#ffa726}
+    .badge.zero .dot{background:#ffa726}
+    .badge.securebert{background:#1a1040;border-color:#7c4dff;color:#b39ddb}
+    .badge.securebert .dot{background:#b39ddb}
+    .badge.xgb{background:#001e30;border-color:#0288d1;color:#4fc3f7}
+    .badge.xgb .dot{background:#4fc3f7}
+
+    .card{
+      background:#13161f;
+      border:1px solid #1e2130;
+      border-radius:18px;
+      padding:28px;
+      width:100%;
+      max-width:900px;
+      margin-bottom:20px;
+    }
+
+    .input-row{display:flex;gap:10px}
+    input[type=text], textarea{
+      width:100%;
+      padding:13px 16px;
+      background:#0a0c14;
+      border:1px solid #1e2130;
+      border-radius:10px;
+      color:#fff;
+      font-size:.95rem;
+      font-family:'Trebuchet MS','Segoe UI',sans-serif;
+      letter-spacing:.15px;
+      outline:none;
+      transition:border .2s;
+    }
+    input[type=text]:focus, textarea:focus{border-color:#4fc3f7}
+    input[type=text]::placeholder, textarea::placeholder{color:#444}
+
+    button{
+      padding:13px 22px;
+      background:#4fc3f7;
+      color:#0a0c14;
+      border:none;
+      border-radius:10px;
+      font-weight:650;
+      letter-spacing:.2px;
+      font-family:'Trebuchet MS','Segoe UI',sans-serif;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    button:hover{background:#81d4fa}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .toggle-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:12px;
+      color:#9aa3b2;
+      font-size:.92rem;
+    }
+    .toggle-row input[type=checkbox]{
+      width:18px;
+      height:18px;
+      accent-color:#4fc3f7;
+    }
+
+    .result{
+      display:none;
+      width:100%;
+      max-width:900px;
+      background:#10131c;
+      border:1px solid #242839;
+      border-radius:12px;
+      padding:18px;
+      line-height:1.7;
+      margin-bottom:20px;
+    }
+    .result.show{display:block}
+    .result.good{border-color:#2e7d32;color:#a5d6a7}
+    .result.bad{border-color:#c62828;color:#ffcdd2}
+    .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .score{background:#0a0c14;border:1px solid #1e2130;border-radius:8px;padding:10px;color:#e0e0e0}
+    .score span{display:block;color:#777;font-size:.75rem}
+
+    .tabs-wrap{
+      width:100%;
+      max-width:900px;
+      margin-top:4px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid #243146;
+      background:linear-gradient(180deg,#182130,#121b2a);
+    }
+
+    .tabs-nav{
+      display:flex;
+      gap:0;
+      border-bottom:1px solid #243146;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:thin;
+    }
+
+    .tab-btn{
+      flex:1;
+      min-width:170px;
+      padding:16px 14px;
+      border:none;
+      background:transparent;
+      color:#9fb3cc;
+      font-size:1rem;
+      font-weight:650;
+      letter-spacing:.2px;
+      font-family:'Trebuchet MS','Segoe UI',sans-serif;
+      cursor:pointer;
+      border-radius:0;
+      transition:color .2s, background .2s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+    .tab-icon{
+      width:18px;
+      height:18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      opacity:.95;
+    }
+    .tab-icon svg{
+      width:18px;
+      height:18px;
+      fill:currentColor;
+    }
+    .tab-btn:hover{
+      color:#d6e4f2;
+      background:rgba(79,195,247,.07);
+    }
+    .tab-btn.active{
+      color:#eaf6ff;
+      box-shadow:inset 0 -3px 0 0 #4fc3f7;
+      background:rgba(79,195,247,.09);
+    }
+
+    .tab-panel{
+      display:none;
+      padding:26px;
+      background:#13161f;
+      color:#e0e0e0;
+      overflow-wrap:anywhere;
+    }
+    .tab-panel.active{display:block}
+
+    .tab-title{
+      font-size:1.9rem;
+      margin-bottom:8px;
+      color:#fff;
+      font-weight:700;
+      letter-spacing:.2px;
+      font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    }
+    .tab-sub{
+      color:#9aa3b2;
+      margin-bottom:16px;
+      font-size:1.02rem;
+      letter-spacing:.1px;
+    }
+
+    .batch-actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    .btn-soft{
+      background:linear-gradient(180deg,#243348,#1a2639);
+      border:1px solid #32475f;
+      color:#d6e4f2;
+    }
+    .btn-soft:hover{
+      background:linear-gradient(180deg,#2a3a50,#1e2c42);
+    }
+    .muted{color:#8c94a1;font-size:.88rem;letter-spacing:.1px}
+
+    .table-wrap{
+      margin-top:16px;
+      max-height:420px;
+      overflow:auto;
+      border:1px solid #1e2130;
+      border-radius:10px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.9rem;
+      font-family:'Segoe UI',sans-serif;
+    }
+    th, td{
+      text-align:left;
+      padding:10px 12px;
+      border-bottom:1px solid #1e2130;
+      vertical-align:top;
+      word-break:normal;
+      overflow-wrap:normal;
+      white-space:normal;
+    }
+    td:nth-child(3),
+    td:nth-child(4),
+    td:nth-child(5),
+    td:nth-child(6),
+    td:nth-child(7),
+    td:nth-child(8){
+      white-space:nowrap;
+    }
+    th{
+      position:sticky;
+      top:0;
+      background:#0f121b;
+      color:#9fb3cc;
+      z-index:1;
+    }
+    .p-benign{color:#66bb6a;font-weight:700}
+    .p-malware{color:#ef5350;font-weight:700}
+
+    .about-box{
+      border:1px solid #1e2130;
+      border-radius:12px;
+      background:#0f121b;
+      padding:16px;
+      line-height:1.8;
+      color:#c2cbdb;
+      overflow-wrap:anywhere;
+    }
+    .section-head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .section-head .hicon{
+      width:30px;
+      height:30px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#cfd8e5;
+    }
+    .section-head .hicon svg{
+      width:24px;
+      height:24px;
+      fill:currentColor;
+    }
+    .danger-btn{
+      background:#c63e4a;
+      border:1px solid #d7515d;
+      color:#fff;
+    }
+    .danger-btn:hover{
+      background:#d34b57;
+    }
+
+    @media (max-width:760px){
+      body{padding:18px 12px}
+      h1{font-size:1.7rem}
+      .sub{font-size:.86rem;margin-bottom:20px}
+      .card{padding:16px;border-radius:14px}
+      .input-row{flex-direction:column}
+      .input-row button{width:100%}
+      input[type=text], textarea{font-size:.92rem;padding:12px 13px}
+      .tabs-wrap{border-radius:12px}
+      .tab-panel{padding:16px}
+      .score-grid{grid-template-columns:1fr}
+      .tab-title{font-size:1.45rem}
+      .tab-btn{font-size:.92rem;padding:12px 10px;min-width:145px}
+      th,td{padding:8px 9px;font-size:.82rem}
+      .table-wrap{max-height:55vh}
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Phishing Detector <span>AI</span></h1>
+  <div class="sub">Multi-engine detection system</div>
+
+  <div class="engines">
+    <div class="badge html"><span class="dot"></span>HTML</div>
+    <div class="badge zero"><span class="dot"></span>Zero-Day</div>
+    <div class="badge securebert"><span class="dot"></span>SecureBERT</div>
+    <div class="badge xgb"><span class="dot"></span>XGBoost</div>
+  </div>
+
+  <div class="card">
+    <div class="input-row">
+      <input id="urlInput" type="text" placeholder="Enter URL here...">
+      <button id="scanBtn" class="btn-soft">Scan</button>
+    </div>
+    <div class="toggle-row">
+      <input id="singleHtmlCheck" type="checkbox">
+      <label for="singleHtmlCheck">Enable Deep HTML Content Analysis (slower)</label>
+    </div>
+  </div>
+
+  <div id="result" class="result"></div>
+
+  <div class="tabs-wrap">
+    <div class="tabs-nav">
+      <button id="tab-batch-btn" class="tab-btn active" type="button">
+        <span class="tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5l9-4 9 4-9 4-9-4zm0 7l9 4 9-4v3l-9 4-9-4v-3zm0 6l9 4 9-4v3l-9 4-9-4v-3z"/></svg>
+        </span>
+        <span>Analyse Batch</span>
+      </button>
+      <button id="tab-history-btn" class="tab-btn" type="button">
+        <span class="tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-8.95 8H1l4.6 4.6L10.2 11H6.1A7 7 0 1113 19a6.9 6.9 0 01-4.6-1.7l-1.4 1.5A9 9 0 1013 3zm-1 5h2v5l4.2 2.5-1 1.7L12 14V8z"/></svg>
+        </span>
+        <span>Historique</span>
+      </button>
+      <button id="tab-about-btn" class="tab-btn" type="button">
+        <span class="tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M11 9h2V7h-2v2zm1 13a10 10 0 110-20 10 10 0 010 20zm-1-4h2v-7h-2v7z"/></svg>
+        </span>
+        <span>A Propos</span>
+      </button>
+    </div>
+
+    <section id="tab-batch" class="tab-panel active">
+      <div class="tab-title">Analyser Plusieurs URLs</div>
+      <div class="tab-sub">Collez plusieurs URLs (une par ligne).</div>
+      <textarea id="batchInput" rows="7" placeholder="https://url1.com&#10;https://url2.com"></textarea>
+      <div class="toggle-row">
+        <input id="batchHtmlCheck" type="checkbox">
+        <label for="batchHtmlCheck">Enable Deep HTML for Batch (slower)</label>
+      </div>
+      <div class="batch-actions">
+        <button id="batchBtn" type="button" class="btn-soft">Analyser le Batch</button>
+      </div>
+      <div id="batchMeta" class="muted" style="margin-top:10px;"></div>
+      <div id="batchTableWrap" class="table-wrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>URL</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>XGB</th>
+              <th>SecureBERT</th>
+              <th>Zero-Day</th>
+              <th>HTML</th>
+            </tr>
+          </thead>
+          <tbody id="batchTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-history" class="tab-panel">
+      <div class="section-head">
+        <span class="hicon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-8.95 8H1l4.6 4.6L10.2 11H6.1A7 7 0 1113 19a6.9 6.9 0 01-4.6-1.7l-1.4 1.5A9 9 0 1013 3zm-1 5h2v5l4.2 2.5-1 1.7L12 14V8z"/></svg>
+        </span>
+        <div class="tab-title" style="margin-bottom:0">Historique des Analyses</div>
+      </div>
+      <div class="tab-sub">URLs deja testees dans l'application.</div>
+      <div class="batch-actions">
+        <button id="historyBtn" type="button" class="btn-soft">Actualiser</button>
+        <button id="clearHistoryBtn" type="button" class="danger-btn">
+          <span class="tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h2v9H7V9zm4 0h2v9h-2V9zm4 0h2v9h-2V9z"/></svg>
+          </span>
+          <span>Effacer l'Historique</span>
+        </button>
+      </div>
+      <div id="historyMeta" class="muted" style="margin-top:10px;"></div>
+      <div id="historyTableWrap" class="table-wrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Prediction</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="historyTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-about" class="tab-panel">
+      <div class="tab-title">A Propos du Projet</div>
+      <div class="about-box">
+        Ce projet combine quatre moteurs de detection:
+        <br>1. XGBoost pour les features structurelles de l'URL.
+        <br>2. SecureBERT pour le contexte semantique de l'URL.
+        <br>3. Zero-Day heuristique pour les patterns emergents.
+        <br>4. Analyse HTML optionnelle pour des signaux supplementaires.
+        <br><br>
+        Le module Batch permet d'analyser plusieurs URLs ligne par ligne.
+        <br>L'historique affiche les URLs deja testees via l'interface.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const input = document.getElementById('urlInput');
+    const button = document.getElementById('scanBtn');
+    const result = document.getElementById('result');
+
+    function setActiveTab(tabName){
+      const allBtns = [
+        document.getElementById('tab-batch-btn'),
+        document.getElementById('tab-history-btn'),
+        document.getElementById('tab-about-btn')
+      ];
+      const allPanels = [
+        document.getElementById('tab-batch'),
+        document.getElementById('tab-history'),
+        document.getElementById('tab-about')
+      ];
+      allBtns.forEach(b => b.classList.remove('active'));
+      allPanels.forEach(p => p.classList.remove('active'));
+
+      document.getElementById(`tab-${tabName}-btn`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    document.getElementById('tab-batch-btn').addEventListener('click', () => setActiveTab('batch'));
+    document.getElementById('tab-history-btn').addEventListener('click', () => setActiveTab('history'));
+    document.getElementById('tab-about-btn').addEventListener('click', () => setActiveTab('about'));
+
+    async function scanUrl(){
+      const url = input.value.trim();
+      const doHtml = document.getElementById('singleHtmlCheck').checked;
+      if(!url) return;
+
+      button.disabled = true;
+      button.textContent = 'Scanning...';
+      result.className = 'result show';
+      result.textContent = 'Analyzing URL...';
+
+      try{
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url, analyze_html: doHtml})
+        });
+        const data = await response.json();
+
+        if(!response.ok || data.error){
+          throw new Error(data.error || 'Scan failed');
+        }
+
+        const isBad = data.prediction !== 'benign';
+        result.className = `result show ${isBad ? 'bad' : 'good'}`;
+        result.innerHTML = `
+          <strong>${data.prediction.toUpperCase()}</strong> - confidence ${data.confidence}%
+          <div class="score-grid">
+            <div class="score"><span>XGBoost</span>${data.xgb_score ?? 0}%</div>
+            <div class="score"><span>SecureBERT</span>${data.transformer_score ?? 0}%</div>
+            <div class="score"><span>Zero-Day</span>${data.zeroday_score ?? 0}%</div>
+            <div class="score"><span>HTML</span>${data.html_score ?? 0}%</div>
+          </div>
+        `;
+      }catch(error){
+        result.className = 'result show bad';
+        result.textContent = error.message;
+      }finally{
+        button.disabled = false;
+        button.textContent = 'Scan';
+      }
+    }
+
+    async function scanBatch(){
+      const batchBtn = document.getElementById('batchBtn');
+      const txt = document.getElementById('batchInput').value;
+      const urls = txt.split('\n').map(v => v.trim()).filter(Boolean);
+      const doHtml = document.getElementById('batchHtmlCheck').checked;
+      const meta = document.getElementById('batchMeta');
+      const wrap = document.getElementById('batchTableWrap');
+      const tbody = document.getElementById('batchTbody');
+
+      if(urls.length === 0){
+        meta.textContent = 'Ajoutez au moins une URL.';
+        wrap.style.display = 'none';
+        return;
+      }
+
+      batchBtn.disabled = true;
+      batchBtn.textContent = 'Analyse en cours...';
+      meta.textContent = `Analyse de ${urls.length} URLs...`;
+      wrap.style.display = 'none';
+      tbody.innerHTML = '';
+
+      try{
+        const response = await fetch('/api/predict/batch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({urls, analyze_html: doHtml})
+        });
+        const data = await response.json();
+        if(!response.ok || data.error){
+          throw new Error(data.error || 'Batch scan failed');
+        }
+
+        data.results.forEach(item => {
+          const tr = document.createElement('tr');
+          if(item.error){
+            tr.innerHTML = `
+              <td>${item.row}</td>
+              <td>${item.url}</td>
+              <td colspan="6" class="p-malware">${item.error}</td>
+            `;
+          }else{
+            const cls = item.prediction === 'benign' ? 'p-benign' : 'p-malware';
+            tr.innerHTML = `
+              <td>${item.row}</td>
+              <td>${item.url}</td>
+              <td class="${cls}">${item.prediction}</td>
+              <td>${item.confidence}%</td>
+              <td>${item.xgb_score}%</td>
+              <td>${item.transformer_score}%</td>
+              <td>${item.zeroday_score ?? 0}%</td>
+              <td>${item.html_score}%</td>
+            `;
+          }
+          tbody.appendChild(tr);
+        });
+        meta.textContent = `Termine: ${data.count} URLs analysees.`;
+        wrap.style.display = 'block';
+      }catch(error){
+        meta.textContent = error.message;
+        wrap.style.display = 'none';
+      }finally{
+        batchBtn.disabled = false;
+        batchBtn.textContent = 'Analyser le Batch';
+      }
+    }
+
+    async function loadHistory(){
+      const btn = document.getElementById('historyBtn');
+      const meta = document.getElementById('historyMeta');
+      const wrap = document.getElementById('historyTableWrap');
+      const tbody = document.getElementById('historyTbody');
+
+      btn.disabled = true;
+      btn.textContent = 'Chargement...';
+      meta.textContent = 'Recuperation de l historique...';
+      wrap.style.display = 'none';
+      tbody.innerHTML = '';
+
+      try{
+        const response = await fetch('/api/history?limit=300');
+        const data = await response.json();
+        if(!response.ok || data.error){
+          throw new Error(data.error || 'History load failed');
+        }
+
+        if(data.items.length === 0){
+          meta.textContent = 'Historique vide.';
+        }else{
+          data.items.forEach(item => {
+            const tr = document.createElement('tr');
+            const cls = item.prediction === 'safe' ? 'p-benign' : 'p-malware';
+            tr.innerHTML = `
+              <td>${item.url}</td>
+              <td class="${cls}">${item.prediction}</td>
+              <td>${item.timestamp}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          meta.textContent = `${data.count} lignes chargees.`;
+          wrap.style.display = 'block';
+        }
+      }catch(error){
+        meta.textContent = error.message;
+        wrap.style.display = 'none';
+      }finally{
+        btn.disabled = false;
+        btn.textContent = 'Actualiser';
+      }
+    }
+
+    async function clearHistory(){
+      const meta = document.getElementById('historyMeta');
+      const wrap = document.getElementById('historyTableWrap');
+      const tbody = document.getElementById('historyTbody');
+      const ok = window.confirm("Supprimer tout l'historique ?");
+      if(!ok) return;
+      try{
+        const response = await fetch('/api/history/clear', { method:'POST' });
+        const data = await response.json();
+        if(!response.ok || data.error){
+          throw new Error(data.error || 'Clear history failed');
+        }
+        tbody.innerHTML = '';
+        wrap.style.display = 'none';
+        meta.textContent = 'Historique vide.';
+      }catch(error){
+        meta.textContent = error.message;
+      }
+    }
+
+    button.addEventListener('click', scanUrl);
+    document.getElementById('batchBtn').addEventListener('click', scanBatch);
+    document.getElementById('historyBtn').addEventListener('click', loadHistory);
+    document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+    input.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter') scanUrl();
+    });
+  </script>
+
+</body>
+</html>
