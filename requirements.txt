@@ -1,0 +1,11 @@
+flask
+pandas
+joblib
+tldextract
+requests
+beautifulsoup4
+xgboost
+scikit-learn
+torch
+transformers
+matplotlib
